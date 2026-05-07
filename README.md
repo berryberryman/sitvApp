@@ -1,3 +1,6 @@
+sitv app adalah aplikasi berbasis web
+aplikasi finance sangat berguna untuk tracking keuangan
+
 # siTV Finance App - Panduan Setup dengan Supabase & Vercel
 
 Aplikasi sistem informasi keuangan dengan multi-user yang terintegrasi dengan Supabase dan siap deploy ke Vercel.
