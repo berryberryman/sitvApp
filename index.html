@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Tabungan - Multi User</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <!-- HALAMAN LOGIN -->
+    <div id="loginPage" class="fixed inset-0 bg-blue-600 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-96">
+            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">SI TV (Sistem Informasi Tabungan Managed By
+                VIVI)</h2>
+            <div class="space-y-4">
+                <input type="text" id="username" placeholder="Username"
+                    class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" id="password" placeholder="Password"
+                    class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="text-xs text-gray-400 px-1">
+                    <div>Hubungi admin jika ingin ubah password</div>
+
+                </div>
+                <button onclick="handleLogin()"
+                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HALAMAN DASHBOARD -->
+    <div id="mainDashboard" class="hidden p-4 md:p-8">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Tabungan <span id="userDisplay"></span></h1>
+                    <p class="text-gray-500" id="roleTag"></p>
+                </div>
+                <button onclick="handleLogout()"
+                    class="bg-red-100 text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-200">Keluar</button>
+            </div>
+
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500 font-medium">Saldo Tersedia</p>
+                    <h3 class="text-2xl font-bold text-blue-600" id="totalSaldo">Rp 0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500 font-medium text-green-600">Total Masuk</p>
+                    <h3 class="text-2xl font-bold text-gray-800" id="totalMasuk">Rp 0</h3>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <p class="text-sm text-gray-500 font-medium text-red-600">Total Keluar</p>
+                    <h3 class="text-2xl font-bold text-gray-800" id="totalKeluar">Rp 0</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Form Section (Hanya untuk Admin) -->
+                <div id="adminForm" class="hidden bg-white p-6 rounded-2xl shadow-md border border-gray-100 h-fit">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-700" id="formTitle">Input Data (Admin)</h2>
+                    <div class="space-y-4">
+                        <input type="hidden" id="editIndex">
+                        <input type="text" id="namaNasabah" class="w-full p-3 bg-gray-50 border rounded-xl"
+                            placeholder="Nama Nasabah">
+                        <select id="jenisTransaksi" class="w-full p-3 bg-gray-50 border rounded-xl">
+                            <option value="Masuk">Uang Masuk</option>
+                            <option value="Keluar">Uang Keluar</option>
+                        </select>
+                        <input type="number" id="jumlah" class="w-full p-3 bg-gray-50 border rounded-xl"
+                            placeholder="Jumlah (Rp)">
+                        <input type="date" id="tanggal" class="w-full p-3 bg-gray-50 border rounded-xl">
+                        <button onclick="simpanData()" id="btnSimpan"
+                            class="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-blue-700 transition">Simpan</button>
+                    </div>
+
+                    <!-- Tambah User Baru -->
+                    <hr class="my-6">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-700">Tambah User Baru</h2>
+                    <div class="space-y-4">
+                        <input type="text" id="newUsername" class="w-full p-3 bg-gray-50 border rounded-xl"
+                            placeholder="Username Baru">
+                        <input type="password" id="newPassword" class="w-full p-3 bg-gray-50 border rounded-xl"
+                            placeholder="Password">
+                        <button onclick="tambahUser()"
+                            class="w-full bg-green-600 text-white font-semibold py-3 rounded-xl shadow-lg hover:bg-green-700 transition">Tambah
+                            User</button>
+                    </div>
+
+                    <!-- Daftar User -->
+                    <hr class="my-6">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-700">Daftar User</h2>
+                    <div id="userList" class="space-y-2 max-h-48 overflow-y-auto"></div>
+
+                    <!-- Modal Edit User -->
+                    <div id="editUserModal"
+                        class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                        <div class="bg-white p-6 rounded-2xl shadow-lg w-96">
+                            <h2 class="text-lg font-semibold mb-4 text-gray-700">Edit User</h2>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                                    <input type="text" id="editUsername" disabled
+                                        class="w-full p-3 bg-gray-100 border rounded-xl text-gray-600 cursor-not-allowed">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
+                                    <input type="password" id="editPassword"
+                                        class="w-full p-3 bg-gray-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Kosongkan jika tidak ingin mengubah">
+                                </div>
+                                <div class="flex gap-3">
+                                    <button onclick="simpanEditUser()"
+                                        class="flex-1 bg-blue-600 text-white font-semibold py-3 rounded-xl hover:bg-blue-700 transition">Simpan</button>
+                                    <button onclick="tutupEditModal()"
+                                        class="flex-1 bg-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-400 transition">Batal</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Section -->
+                <div id="tableContainer" class="lg:col-span-3">
+                    <div class="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b">
+                                    <th class="p-4 font-semibold text-gray-600 text-sm">Nasabah</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-sm">Tipe</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-sm">Jumlah</th>
+                                    <th class="p-4 font-semibold text-gray-600 text-sm">Tanggal</th>
+                                    <th id="aksiHeader" class="p-4 font-semibold text-gray-600 text-sm text-center">Aksi
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelBody" class="divide-y divide-gray-50"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <script>
+                    let currentUser = null;
+                    let dataTabungan = JSON.parse(localStorage.getItem('tabungan_v2')) || [];
+                    let users = JSON.parse(localStorage.getItem('users_db')) || {};
+
+                    // Inisialisasi user default jika belum ada
+                    function initializeDefaultUsers() {
+                        if (Object.keys(users).length === 0) {
+                            users = {
+                                'admin': { password: 'admin123', nama: 'admin' },
+                                'vivi': { password: 'vivi123', nama: 'vivi' }
+                            };
+                            localStorage.setItem('users_db', JSON.stringify(users));
+                        }
+                    }
+
+                    // Jalankan inisialisasi saat halaman dimuat
+                    initializeDefaultUsers();
+
+                    function handleLogin() {
+                        const username = document.getElementById('username').value.toLowerCase();
+                        const password = document.getElementById('password').value;
+
+                        if (!username || !password) return alert("Masukkan username dan password!");
+
+                        // Validasi username dan password
+                        if (!users[username]) {
+                            return alert("Username tidak ditemukan!");
+                        }
+
+                        if (users[username].password !== password) {
+                            return alert("Password salah!");
+                        }
+
+                        currentUser = username;
+                        document.getElementById('loginPage').classList.add('hidden');
+                        document.getElementById('mainDashboard').classList.remove('hidden');
+
+                        setupUI();
+                        tampilkanData();
+                    }
+
+                    function setupUI() {
+                        const userDisp = document.getElementById('userDisplay');
+                        const roleTag = document.getElementById('roleTag');
+                        const adminForm = document.getElementById('adminForm');
+                        const tableContainer = document.getElementById('tableContainer');
+                        const aksiHeader = document.getElementById('aksiHeader');
+
+                        if (currentUser === 'admin') {
+                            userDisp.innerText = "Nasabah (Admin)";
+                            roleTag.innerText = "Akses Penuh: Kelola semua data nasabah";
+                            adminForm.classList.remove('hidden');
+                            tableContainer.classList.replace('lg:col-span-3', 'lg:col-span-2');
+                            aksiHeader.classList.remove('hidden');
+                            tampilkanDaftarUser();
+                        } else {
+                            userDisp.innerText = currentUser.toUpperCase();
+                            roleTag.innerText = "Akses Nasabah: Lihat riwayat tabungan Anda";
+                            adminForm.classList.add('hidden');
+                            tableContainer.classList.replace('lg:col-span-2', 'lg:col-span-3');
+                            aksiHeader.classList.add('hidden');
+                        }
+                    }
+
+                    function tampilkanData() {
+                        const tabelBody = document.getElementById('tabelBody');
+                        tabelBody.innerHTML = '';
+
+                        // Filter data: Jika bukan admin, hanya lihat data miliknya sendiri
+                        let filteredData = (currentUser === 'admin')
+                            ? dataTabungan
+                            : dataTabungan.filter(i => i.nama.toLowerCase() === currentUser);
+
+                        filteredData.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+                        let totalIn = 0, totalOut = 0;
+
+                        filteredData.forEach((item, index) => {
+                            const isMasuk = item.jenis === 'Masuk';
+                            totalIn += isMasuk ? parseInt(item.jumlah) : 0;
+                            totalOut += !isMasuk ? parseInt(item.jumlah) : 0;
+
+                            tabelBody.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="p-4 font-medium text-gray-700 capitalize">${item.nama}</td>
+                        <td class="p-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold ${isMasuk ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${item.jenis}</span>
+                        </td>
+                        <td class="p-4 font-semibold">Rp ${parseInt(item.jumlah).toLocaleString()}</td>
+                        <td class="p-4 text-gray-500 text-sm">${item.tanggal}</td>
+                        <td class="p-4 text-center ${currentUser !== 'admin' ? 'hidden' : ''}">
+                            <button onclick="editData(${index})" class="text-blue-500 hover:underline mr-2 text-sm">Edit</button>
+                            <button onclick="hapusData(${index})" class="text-red-500 hover:underline text-sm">Hapus</button>
+                        </td>
+                    </tr>`;
+                        });
+
+                        document.getElementById('totalMasuk').innerText = `Rp ${totalIn.toLocaleString()}`;
+                        document.getElementById('totalKeluar').innerText = `Rp ${totalOut.toLocaleString()}`;
+                        document.getElementById('totalSaldo').innerText = `Rp ${(totalIn - totalOut).toLocaleString()}`;
+                    }
+
+                    function simpanData() {
+                        const nama = document.getElementById('namaNasabah').value;
+                        const jenis = document.getElementById('jenisTransaksi').value;
+                        const jumlah = document.getElementById('jumlah').value;
+                        const tanggal = document.getElementById('tanggal').value;
+                        const editIndex = document.getElementById('editIndex').value;
+
+                        if (!nama || !jumlah || !tanggal) return alert("Lengkapi data!");
+
+                        const transaksi = { nama, jenis, jumlah, tanggal };
+                        if (editIndex === "") dataTabungan.push(transaksi);
+                        else dataTabungan[editIndex] = transaksi;
+
+                        localStorage.setItem('tabungan_v2', JSON.stringify(dataTabungan));
+                        resetForm();
+                        tampilkanData();
+                    }
+
+                    function editData(index) {
+                        const item = dataTabungan[index];
+                        document.getElementById('namaNasabah').value = item.nama;
+                        document.getElementById('jenisTransaksi').value = item.jenis;
+                        document.getElementById('jumlah').value = item.jumlah;
+                        document.getElementById('tanggal').value = item.tanggal;
+                        document.getElementById('editIndex').value = index;
+                        document.getElementById('btnSimpan').innerText = "Update Data";
+                    }
+
+                    function hapusData(index) {
+                        if (confirm("Hapus data?")) {
+                            dataTabungan.splice(index, 1);
+                            localStorage.setItem('tabungan_v2', JSON.stringify(dataTabungan));
+                            tampilkanData();
+                        }
+                    }
+
+                    function resetForm() {
+                        document.getElementById('namaNasabah').value = '';
+                        document.getElementById('jumlah').value = '';
+                        document.getElementById('tanggal').value = '';
+                        document.getElementById('editIndex').value = '';
+                        document.getElementById('btnSimpan').innerText = "Simpan";
+                    }
+
+                    function tambahUser() {
+                        const username = document.getElementById('newUsername').value.toLowerCase();
+                        const password = document.getElementById('newPassword').value;
+
+                        if (!username || !password) {
+                            return alert("Masukkan username dan password!");
+                        }
+
+                        if (users[username]) {
+                            return alert("Username sudah terdaftar!");
+                        }
+
+                        users[username] = { password: password, nama: username };
+                        localStorage.setItem('users_db', JSON.stringify(users));
+
+                        document.getElementById('newUsername').value = '';
+                        document.getElementById('newPassword').value = '';
+
+                        alert("User berhasil ditambahkan!");
+                        tampilkanDaftarUser();
+                    }
+
+                    let editingUsername = null;
+
+                    function tampilkanDaftarUser() {
+                        const userList = document.getElementById('userList');
+                        userList.innerHTML = '';
+
+                        Object.keys(users).forEach(username => {
+                            const userDiv = document.createElement('div');
+                            userDiv.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg border';
+                            userDiv.innerHTML = `
+                    <div>
+                        <p class="font-medium text-gray-700">${username}</p>
+                        <p class="text-xs text-gray-500">Password: ${users[username].password}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="bukaEditModal('${username}')" class="text-blue-500 hover:text-blue-700 text-sm font-semibold">Edit</button>
+                        ${username !== 'admin' ? `<button onclick="hapusUser('${username}')" class="text-red-500 hover:text-red-700 text-sm font-semibold">Hapus</button>` : ''}
+                    </div>
+                `;
+                            userList.appendChild(userDiv);
+                        });
+                    }
+
+                    function bukaEditModal(username) {
+                        editingUsername = username;
+                        document.getElementById('editUsername').value = username;
+                        document.getElementById('editPassword').value = '';
+                        document.getElementById('editUserModal').classList.remove('hidden');
+                    }
+
+                    function tutupEditModal() {
+                        document.getElementById('editUserModal').classList.add('hidden');
+                        editingUsername = null;
+                    }
+
+                    function simpanEditUser() {
+                        const newPassword = document.getElementById('editPassword').value;
+
+                        if (!editingUsername) return;
+
+                        if (newPassword === '') {
+                            return alert("Masukkan password baru!");
+                        }
+
+                        users[editingUsername].password = newPassword;
+                        localStorage.setItem('users_db', JSON.stringify(users));
+
+                        alert("User berhasil diperbarui!");
+                        tutupEditModal();
+                        tampilkanDaftarUser();
+                    }
+
+                    function hapusUser(username) {
+                        if (username === 'admin') {
+                            return alert("Tidak bisa menghapus user admin!");
+                        }
+
+                        if (confirm(`Hapus user ${username}?`)) {
+                            delete users[username];
+                            localStorage.setItem('users_db', JSON.stringify(users));
+                            tampilkanDaftarUser();
+                            alert("User berhasil dihapus!");
+                        }
+                    }
+
+                    function handleLogout() {
+                        currentUser = null;
+                        location.reload();
+                    }
+                </script>
+</body>
+
+</html>
+
+</script>
+</body>
+
+</html>
