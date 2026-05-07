@@ -4,13 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Tabungan - Multi User</title>
+    <title>Sistem Finance - Multi User</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
+        html,
+        body {
+            height: 100%;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #mainDashboard,
+        #loginPage {
+            flex: 1;
+        }
+
+        footer {
+            margin-top: auto;
         }
     </style>
 </head>
@@ -18,23 +34,26 @@
 <body class="antialiased">
 
     <!-- HALAMAN LOGIN -->
-    <div id="loginPage" class="fixed inset-0 bg-blue-600 flex items-center justify-center z-50">
+    <div id="loginPage" class="fixed inset-0 bg-blue-600 flex flex-col items-center justify-center z-50">
         <div class="bg-white p-8 rounded-3xl shadow-2xl w-96">
-            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">SI TV (Sistem Informasi Tabungan Managed By
-                VIVI)</h2>
+            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">Selamat Datang di Sistem Infomasi Keuangan
+                siTV</h2>
             <div class="space-y-4">
                 <input type="text" id="username" placeholder="Username"
                     class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
                 <input type="password" id="password" placeholder="Password"
                     class="w-full p-3 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
                 <div class="text-xs text-gray-400 px-1">
-                    <div>Hubungi admin jika ingin ubah password</div>
+                    <div>Hubungi admin jika ingin daftar atau ubah password</div>
 
                 </div>
                 <button onclick="handleLogin()"
                     class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Login</button>
             </div>
         </div>
+        <footer class="text-center text-white text-sm p-4 mt-8">
+            &copy; 2026 manage by vivicu. All rights reserved.
+        </footer>
     </div>
 
     <!-- HALAMAN DASHBOARD -->
@@ -388,11 +407,8 @@
                         location.reload();
                     }
                 </script>
-</body>
 
-</html>
 
-</script>
 </body>
 
 </html>
