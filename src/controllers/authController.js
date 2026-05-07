@@ -12,8 +12,12 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Cek user di table users
-    const { data: user, error: userError } = await supabase.from("users").select("*").eq("username", username).single();
+    console.log(`🔍 Login attempt: username=${username}`);
+
+    // Cek user di table users (gunakan supabaseAdmin untuk bypass RLS)
+    const { data: user, error: userError } = await supabaseAdmin.from("users").select("*").eq("username", username).single();
+
+    console.log(`📊 Query result:`, { user, userError });
 
     if (userError || !user) {
       return res.status(401).json({
